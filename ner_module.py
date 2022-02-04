@@ -31,7 +31,7 @@ class spacyNER(NERModule):
 		self.model = spacy.load("en_core_web_sm")
 
 	def getListOfEntities(self, input):
-		results = []
+		results = set()
 
 		try:
 			output = self.model(input)
@@ -39,9 +39,9 @@ class spacyNER(NERModule):
 			raise AssertionError('Input should be a string')
 		
 		for ent in output.ents:
-			results.append((ent.text,ent.label_))
+			results.add((ent.text,ent.label_))
 
-		return results
+		return list(results)
 
 def test():
 	raw_text = "The Indian Space Research Organisation or is the national space agency of India, headquartered in Bengaluru. It operates under Department of Space which is directly overseen by the Prime Minister of India while Chairman of ISRO acts as executive of DOS as well."
