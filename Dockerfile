@@ -1,5 +1,4 @@
 FROM python:3.8.12-bullseye
-ENV PORT 5000
 ENV HOST 0.0.0.0
 RUN apt-get update && apt-get install -y apache2 \
 	apache2-dev \
@@ -17,7 +16,7 @@ RUN chown www-data:www-data /var/www/ner_api/database/scraped_entities.db
 WORKDIR /var/www/ner_api/ner_api_service
 RUN python -m spacy download en_core_web_sm
 RUN /usr/local/bin/mod_wsgi-express install-module
-RUN mod_wsgi-express setup-server ner_api_service.wsgi --port=5000 \
+RUN mod_wsgi-express setup-server ner_api_service.wsgi --port=8080 \
 	--user www-data --group www-data \
 	--server-root=/etc/mod_wsgi-express-80
 CMD /etc/mod_wsgi-express-80/apachectl start -D FOREGROUND
