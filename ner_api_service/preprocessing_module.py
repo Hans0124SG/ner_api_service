@@ -7,10 +7,10 @@ def scrapeSingleURL(url: str) -> str:
 	Scrape and clean the body text of an url.
 
 			Parameters:
-					url (string): The url of the webpage to scrape
+					url (str): The url of the webpage to scrape
 
 			Returns:
-					body (string): The cleaned body text of the webpage
+					body (str): The cleaned body text of the webpage
 	'''
 	html_content = requests.get(url).content
 	soup = BeautifulSoup(html_content, "html.parser")
@@ -33,7 +33,17 @@ def test():
 	results = NER_model.getListOfEntities(raw_text)
 	print(results)
 
+def test2():
+
+	url = "htt.gic.com.sg/newsroom/all/gic-becomes-strategic-investor-in-intercontinental-energy-leading-green-fuels-company/"
+	raw_text = scrapeSingleURL(url)
+	from ner_module import spacyNER
+	NER_model = spacyNER()
+	results = NER_model.getListOfEntities(raw_text)
+	print(results)
+
 if __name__ == '__main__':
 	test()
+	test2()
 
 

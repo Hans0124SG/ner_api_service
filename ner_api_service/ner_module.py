@@ -16,10 +16,10 @@ class NERModule():
 		Returns the list of entities and corresponding text extracted from the input.
 
 				Parameters:
-						input (string): The input text body
+						input (str): The input text body
 
 				Returns:
-						list_of_entities (list): List of tuples (entity, text)
+						list_of_entities (List): List of tuples (entity, text)
 		'''
 		return [(None,None)]
 
@@ -31,7 +31,7 @@ class spacyNER(NERModule):
 		self.model = spacy.load("en_core_web_sm")
 
 	def getListOfEntities(self, input):
-		results = set()
+		results = set() # use set to keep only unique entity-text pair
 
 		try:
 			output = self.model(input)

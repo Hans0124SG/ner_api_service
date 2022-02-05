@@ -7,84 +7,101 @@ import preprocessing_module
 import db_module
 
 app = Flask(__name__)
-swagger = Swagger(app)
+
+template = {
+  "swagger": "2.0",
+  "info": {
+	"title": "NER API",
+	"description": "A Named Entity Recognition API, able to recognize entities in text from websites, csv files and databases.",
+	"version": "0.0.1"
+  }
+}
+
+swagger = Swagger(app, template=template)
 db_path = 'sqlite:///../database/scraped_entities.db'
 model = spacyNER()
 
 @app.route('/')
 def hello():
-    return redirect(url_for('flasgger.apidocs'))
+	'''
+	To redirect the homepage to the flasgger apidocs page
+	'''
+	return redirect(url_for('flasgger.apidocs'))
 
 @app.route("/recognize_entities", methods=['GET'])
 def recognize_entities():
 	"""Endpoint returning the named entities extracted from the text
 	---
 	parameters: 
-    	- name: text
-    	  in: query
-    	  type: string
-    	  required: true
+		- name: text
+		  in: query
+		  type: string
+		  required: true
 	responses: 
 		200: 
-	  		description: text
+			description: text
 	"""
 	input = request.args.get('text')
 	entities = model.getListOfEntities(input)
 	if len(entities) == 0:
+		code = 204
 		status = 'No entities was recognized in the text'
 	else:
+		code = 200
 		status = 'Successfully recognized'
-	return jsonify(status=status, entities=entities)
+	return jsonify(code=code, status=status, entities=entities)
 
 @app.route("/retrieve_from_url", methods=['POST'])
 def retrieve_from_url():
 	"""Endpoint retrieving the named entities the body text in the url and persist the result into the database 
 	---
 	parameters: 
-    	- name: url
-    	  in: query
-    	  type: string
-    	  required: true
+		- name: url
+		  in: query
+		  type: string
+		  required: true
 	responses: 
 		200: 
-	  		description: text
+			description: text
 	"""
 	source = request.args.get('url')
 	input = preprocessing_module.scrapeSingleURL(source)
 	entities = model.getListOfEntities(input)
+
+	# write to database
 	engine = create_engine(db_path)
 	meta_data = MetaData(bind=engine)
 	MetaData.reflect(meta_data)
 	tables = meta_data.tables
 	with engine.connect() as connection:
-		response = db_module.insertSingleRecord(connection, tables, 'webpage', source, input, entities)
+		code, response = db_module.insertSingleRecord(connection, tables, 'webpage', source, input, entities)
 
-	return jsonify(status=response)
+	return jsonify(code=code, status=response)
 
 @app.route("/retrieve_from_csv", methods=['POST'])
 def retrieve_from_csv():
 	"""Endpoint retrieving the named entities the body text in a csv and persist the result into the database 
 	---
 	parameters: 
-    	- name: csv_file
-    	  in: formData
-    	  type: file
-    	  required: true
-    	- name: text_col
-    	  in: query
-    	  type: string
-    	  required: true
-    	- name: source_col
-    	  in: query
-    	  type: string
-    	  required: true
-    	- name: source_type_col
-    	  in: query
-    	  type: string
-    	  required: true
+		- name: csv_file
+		  in: formData
+		  type: file
+		  required: true
+		- name: text_col
+		  in: query
+		  type: string
+		  required: true
+		- name: source_col
+		  in: query
+		  type: string
+		  required: true
+		- name: source_type_col
+		  in: query
+		  type: string
+		  required: true
 	responses: 
 		200: 
-	  		description: text
+			description: text
 	"""
 	import pandas as pd
 	text_col = request.args.get('text_col')
@@ -100,9 +117,9 @@ def retrieve_from_csv():
 	MetaData.reflect(meta_data)
 	tables = meta_data.tables
 	with engine.connect() as connection:
-		response = db_module.insertDataFrameRecord(connection, tables, batch_sources[['source_type', 'source', 'text', 'entities']])
+		code, response = db_module.insertDataFrameRecord(connection, tables, batch_sources[['source_type', 'source', 'text', 'entities']])
 
-	return jsonify(status=response)
+	return jsonify(code=code, status=response)
 
 
 @app.route("/retrieve_from_db", methods=['POST'])
@@ -110,29 +127,29 @@ def retrieve_from_db():
 	"""Endpoint retrieving the named entities the body text in a database and persist the result into the database 
 	---
 	parameters: 
-    	- name: database_path
-    	  in: query
-    	  type: string
-    	  required: true
-    	- name: target_table
-    	  in: query
-    	  type: string
-    	  required: true
-    	- name: text_col
-    	  in: query
-    	  type: string
-    	  required: true
-    	- name: source_col
-    	  in: query
-    	  type: string
-    	  required: true
-    	- name: source_type_col
-    	  in: query
-    	  type: string
-    	  required: true
+		- name: database_path
+		  in: query
+		  type: string
+		  required: true
+		- name: target_table
+		  in: query
+		  type: string
+		  required: true
+		- name: text_col
+		  in: query
+		  type: string
+		  required: true
+		- name: source_col
+		  in: query
+		  type: string
+		  required: true
+		- name: source_type_col
+		  in: query
+		  type: string
+		  required: true
 	responses: 
 		200: 
-	  		description: text
+			description: text
 	"""
 	import pandas as pd
 	text_col = request.args.get('text_col')
@@ -149,9 +166,9 @@ def retrieve_from_db():
 	MetaData.reflect(meta_data)
 	tables = meta_data.tables
 	with engine.connect() as connection:
-		response = db_module.insertDataFrameRecord(connection, tables, batch_sources[['source_type', 'source', 'text', 'entities']])
+		code, response = db_module.insertDataFrameRecord(connection, tables, batch_sources[['source_type', 'source', 'text', 'entities']])
 
-	return jsonify(status=response)
+	return jsonify(code=code, status=response)
 
 @app.route("/show_entities", methods=['GET'])
 def show_entities():
@@ -159,7 +176,7 @@ def show_entities():
 	---
 	responses: 
 		200: 
-	  		description: text
+			description: text
 	"""
 	engine = create_engine(db_path)
 	meta_data = MetaData(bind=engine)
@@ -168,20 +185,20 @@ def show_entities():
 	with engine.connect() as connection:
 		results = db_module.retrieveAllEntities(connection, tables)
 
-	return jsonify(status=results[0], entities=results[1])
+	return jsonify(code=results[0], status=results[1], entities=results[2])
 
 @app.route("/search_entity", methods=['GET'])
 def search_entity():
 	"""Endpoint searching the corresponding text in the database given an entity
 	---
 	parameters: 
-    	- name: entity
-    	  in: query
-    	  type: string
-    	  required: true
+		- name: entity
+		  in: query
+		  type: string
+		  required: true
 	responses: 
 		200: 
-	  		description: text
+			description: text
 	"""
 	entity = request.args.get('entity')
 	engine = create_engine(db_path)
@@ -191,7 +208,7 @@ def search_entity():
 	with engine.connect() as connection:
 		results = db_module.searchEntity(connection, tables, entity)
 
-	return jsonify(status=results[0], entities=results[1])
+	return jsonify(code=results[0], status=results[1], text=results[2])
 
 if __name__ == '__main__':
 	app.run(debug=False, host='0.0.0.0', port=int(os.environ.get('PORT', 5000)))
