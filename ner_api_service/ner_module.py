@@ -27,10 +27,22 @@ class NERModule():
 class spacyNER(NERModule):
 
 	def __init__(self):
+		'''
+		Initialization of the spacy NER model.
+		'''
 		super().__init__()
 		self.model = spacy.load("en_core_web_sm")
 
-	def getListOfEntities(self, input):
+	def getListOfEntities(self, input: str) -> List[Tuple[str, str]]:
+		'''
+		Returns the list of entities and corresponding text extracted from the input.
+
+				Parameters:
+						input (str): The input text body
+
+				Returns:
+						list_of_entities (List): List of tuples (entity, text)
+		'''
 		results = set() # use set to keep only unique entity-text pair
 
 		try:

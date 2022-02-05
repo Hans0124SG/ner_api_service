@@ -24,14 +24,14 @@ db_path = 'sqlite:////var/www/ner_api/database/scraped_entities.db'
 model = spacyNER()
 
 @app.route('/')
-def hello():
+def showAPIDocs():
 	'''
 	To redirect the homepage to the flasgger apidocs page
 	'''
 	return redirect(url_for('flasgger.apidocs'))
 
 @app.route("/recognize_entities", methods=['GET'])
-def recognize_entities():
+def recognizeEntities():
 	"""Endpoint returning the named entities extracted from the text
 	---
 	parameters: 
@@ -54,7 +54,7 @@ def recognize_entities():
 	return jsonify(code=code, status=status, entities=entities)
 
 @app.route("/retrieve_from_url", methods=['POST'])
-def retrieve_from_url():
+def retrieveFromURL():
 	"""Endpoint retrieving the named entities the body text in the url and persist the result into the database 
 	---
 	parameters: 
@@ -81,7 +81,7 @@ def retrieve_from_url():
 	return jsonify(code=code, status=response)
 
 @app.route("/retrieve_from_csv", methods=['POST'])
-def retrieve_from_csv():
+def retrieveFromCSV():
 	"""Endpoint retrieving the named entities the body text in a csv and persist the result into the database 
 	---
 	parameters: 
@@ -124,7 +124,7 @@ def retrieve_from_csv():
 
 
 @app.route("/retrieve_from_db", methods=['POST'])
-def retrieve_from_db():
+def retrieveFromDB():
 	"""Endpoint retrieving the named entities the body text in a database and persist the result into the database 
 	---
 	parameters: 
@@ -172,7 +172,7 @@ def retrieve_from_db():
 	return jsonify(code=code, status=response)
 
 @app.route("/show_entities", methods=['GET'])
-def show_entities():
+def showEntities():
 	"""Endpoint retrieving the named entities in the database 
 	---
 	responses: 
@@ -189,7 +189,7 @@ def show_entities():
 	return jsonify(code=results[0], status=results[1], entities=results[2])
 
 @app.route("/search_entity", methods=['GET'])
-def search_entity():
+def searchEntity():
 	"""Endpoint searching the corresponding text in the database given an entity
 	---
 	parameters: 
