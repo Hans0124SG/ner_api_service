@@ -18,9 +18,10 @@ Features that I prioritize:
 - Given a SQLAlchemy database path, persist the entities recognized in all text entries in the specified table into a database
 - Given an entity, return a list of text of that entity in the database
 - Return a list of extracted entities in the database
-2. Documentation
-3. Testing each individual module
-4. Use Git to do version control
+2. Use Flasgger to provide an UI for our API service
+3. Documentation
+4. Testing each individual module
+5. Use Git to do version control
 
 Features that I de-prioritize:
 -
