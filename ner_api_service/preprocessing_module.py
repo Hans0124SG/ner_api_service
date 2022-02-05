@@ -33,17 +33,7 @@ def test():
 	results = NER_model.getListOfEntities(raw_text)
 	print(results)
 
-def test2():
-
-	url = "htt.gic.com.sg/newsroom/all/gic-becomes-strategic-investor-in-intercontinental-energy-leading-green-fuels-company/"
-	raw_text = scrapeSingleURL(url)
-	from ner_module import spacyNER
-	NER_model = spacyNER()
-	results = NER_model.getListOfEntities(raw_text)
-	print(results)
-
 if __name__ == '__main__':
 	test()
-	test2()
 
 

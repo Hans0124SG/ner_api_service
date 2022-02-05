@@ -67,7 +67,7 @@ def insertSingleRecord(connection: sqlalchemy.engine.base.Connection, tables: sq
 				connection.execute(entities_table.insert().values(entity=ent, text=text, source_id=new_source_id))
 		return 200, 'New entities successfully populated'
 	except:
-		return 400, 'Unknown error'
+		return 400, 'Bad Request'
 
 def insertDataFrameRecord(connection: sqlalchemy.engine.base.Connection, tables: sqlalchemy.util._collections.immutabledict, batch_sources: pd.DataFrame) -> Tuple[int, str]:
 	'''
@@ -84,10 +84,10 @@ def insertDataFrameRecord(connection: sqlalchemy.engine.base.Connection, tables:
 	responses = set()
 	for index, row in batch_sources.iterrows():
 		response = insertSingleRecord(connection, tables, row['source_type'], row['source'], row['text'], row['entities'])
-		responses.add(response)
-	if 'Unknown error' in responses:
-		return 400, 'Unknown error'
-	elif 'Source existed, entities are not populated' in responses:
+		responses.add(response[0])
+	if 400 in responses:
+		return 400, 'Bad Request'
+	elif 204 in responses:
 		return 204, 'At least some sources are existed in the database and not populated'
 	else:
 		return 200, 'New entities are successfully populated for each entry'
@@ -128,23 +128,32 @@ def searchEntity(connection: sqlalchemy.engine.base.Connection, tables: sqlalche
 		else:
 			return (204, 'Entity was not found in the database', [])
 	except:
-		return (400, 'Unknown error', [])
+		return (400, 'Bad Request', [])
 
 def test():
-	db_path = 'sqlite:///./scraped_entities.db'
+	db_path = 'sqlite:///../database/scraped_entities.db'
 	source = "www.google.com"
 	source_type = 'url'
 	engine = create_engine(db_path)
 	meta_data = MetaData(bind=engine)
 	MetaData.reflect(meta_data)
 	tables = meta_data.tables
+	raw_text = 'test_text haha'
 	entities = [('test_text', 'test_entity')]
+	batch_sources = pd.DataFrame({
+		"source_type": ['webpage', 'book'],
+		"source": ["www.gic.com.sg", 'Ten Days'],
+		'text': ["GIC has successfully acquired Dairy Farm", 'Ford runs faster than Toyota'],
+		'entities': [[('GIC', 'ORG'), ('Dairy Farm', 'ORG')], [('Ford', "PERSON"), ('Toyota', 'PERSON')]]
+		})
 	with engine.connect() as connection:
 		print(checkIfSourceExists(connection, tables['sources'], source))
-		print(insertSingleRecord(connection, tables, 'webpage', source, entities))
+		print(insertSingleRecord(connection, tables, 'webpage', source, raw_text, entities))
+		print(insertDataFrameRecord(connection, tables, batch_sources))
+
 
 def test2():
-	db_path = 'sqlite:///./scraped_entities.db'
+	db_path = 'sqlite:///../database/scraped_entities.db'
 	engine = create_engine(db_path)
 	meta_data = MetaData(bind=engine)
 	MetaData.reflect(meta_data)
@@ -154,13 +163,13 @@ def test2():
 		print(result)
 
 def test3():
-	db_path = 'sqlite:///./scraped_entities.db'
+	db_path = 'sqlite:///../database/scraped_entities.db'
 	engine = create_engine(db_path)
 	meta_data = MetaData(bind=engine)
 	MetaData.reflect(meta_data)
 	tables = meta_data.tables
 	with engine.connect() as connection:
-		result = searchEntity(connection, tables, 'LOC')
+		result = searchEntity(connection, tables, 'ORG')
 		print(result)
 
 if __name__ == '__main__':
