@@ -24,7 +24,6 @@ def scrapeSingleURL(url: str) -> str:
 
 	return body
 
-
 def test():
 
 	url = "https://www.gic.com.sg/newsroom/all/gic-becomes-strategic-investor-in-intercontinental-energy-leading-green-fuels-company/"

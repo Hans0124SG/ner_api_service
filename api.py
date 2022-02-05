@@ -10,8 +10,8 @@ swagger = Swagger(app)
 db_path = 'sqlite:///./scraped_entities.db'
 
 
-@app.route("/get_entities", methods=['GET'])
-def get_entities():
+@app.route("/recognize_entities", methods=['GET'])
+def recognize_entities():
 	"""Endpoint returning the named entities extracted from the text
 	---
 	parameters: 
@@ -25,8 +25,12 @@ def get_entities():
 	"""
 	model = spacyNER()
 	input = request.args.get('text')
-
-	return jsonify(result=model.getListOfEntities(input))
+	entities = model.getListOfEntities(input)
+	if len(entities) == 0:
+		status = 'No entities was recognized in the text'
+	else:
+		status = 'Successfully recognized'
+	return jsonify(status=status, entities=entities)
 
 @app.route("/scrape_url", methods=['POST'])
 def scrape_url():
@@ -53,6 +57,46 @@ def scrape_url():
 		response = db_module.insertSingleRecord(connection, tables, url, entities)
 
 	return jsonify(status=response)
+
+@app.route("/retrieve_entities", methods=['GET'])
+def retrieve_entities():
+	"""Endpoint retrieving the named entities in the database 
+	---
+	responses: 
+		200: 
+	  		description: text
+	"""
+	engine = create_engine(db_path)
+	meta_data = MetaData(bind=engine)
+	MetaData.reflect(meta_data)
+	tables = meta_data.tables
+	with engine.connect() as connection:
+		results = db_module.retrieveAllEntities(connection, tables)
+
+	return jsonify(status=results[0], entities=results[1])
+
+@app.route("/search_entity", methods=['GET'])
+def search_entity():
+	"""Endpoint searching the corresponding text in the database given an entity
+	---
+	parameters: 
+    	- name: entity
+    	  in: query
+    	  type: string
+    	  required: true
+	responses: 
+		200: 
+	  		description: text
+	"""
+	entity = request.args.get('entity')
+	engine = create_engine(db_path)
+	meta_data = MetaData(bind=engine)
+	MetaData.reflect(meta_data)
+	tables = meta_data.tables
+	with engine.connect() as connection:
+		results = db_module.searchEntity(connection, tables, entity)
+
+	return jsonify(status=results[0], entities=results[1])
 
 if __name__ == '__main__':
 	app.run(debug=True, host='0.0.0.0')
