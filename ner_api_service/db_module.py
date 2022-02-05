@@ -2,22 +2,23 @@ from typing import List, Tuple
 import sqlalchemy
 from sqlalchemy import create_engine, MetaData
 from sqlalchemy.sql import select
+import pandas as pd
 
-def checkIfURLExists(connection: sqlalchemy.engine.base.Connection, urls: sqlalchemy.sql.schema.Table, url: str) -> bool:
+def checkIfSourceExists(connection: sqlalchemy.engine.base.Connection, sources: sqlalchemy.sql.schema.Table, source: str) -> bool:
 	'''
-	Check if the query url already exists in the database
+	Check if the query source already exists in the database
 
 			Parameters:
 					connection (sqlalchemy.engine.base.Connection): The active database connection
-					urls (sqlalchemy.sql.schema.Table): The urls table in the database
-					url (string): The query url
+					sources (sqlalchemy.sql.schema.Table): The sources table in the database
+					source (string): The query source
 
 			Returns:
-					length_of_result (bool): whether there is at least one record with same url in the database 
+					length_of_result (bool): whether there is at least one record with same source in the database 
 	'''
 	result = connection.execute(
-		select([urls.c.url_id]).
-    	where(urls.c.url == url)
+		select([sources.c.source_id]).
+    	where(sources.c.source == source)
 		)
 	return len(result.fetchall()) > 0
 
@@ -39,31 +40,58 @@ def checkIfEntityExists(connection: sqlalchemy.engine.base.Connection, entities:
 		)
 	return len(result.fetchall()) > 0
 
-def insertSingleRecord(connection: sqlalchemy.engine.base.Connection, tables: sqlalchemy.util._collections.immutabledict, url: str, entities: List[Tuple[str, str]]) -> str:
+def insertSingleRecord(connection: sqlalchemy.engine.base.Connection, tables: sqlalchemy.util._collections.immutabledict, source_type: str, source: str, raw_text: str, entities: List[Tuple[str, str]]) -> str:
 	'''
-	Insert the scraped entities into the database
+	Insert the entities into the database
 
 			Parameters:
 					connection (sqlalchemy.engine.base.Connection): The active database connection
 					tables (sqlalchemy.util._collections.immutabledict): The tables in the database
-					url (string): The query url
+					source_type (string): The type of the source (e.g. webpage, database, csv_file)
+					source (string): The query source
+					raw_text (string): The query text
+					entities (List[Tuple[str, str]]): The extracted entities
 
 			Returns:
-					length_of_result (bool): whether there is at least one record with same url in the database 
+					message (string): The status message of the action 
 	'''
-	urls_table = tables['urls']
+	sources_table = tables['sources']
 	entities_table = tables['entities']
 
 	try:
-		if checkIfURLExists(connection, urls_table, url):
-			return 'URL existed, entities are not populated'
+		if checkIfSourceExists(connection, sources_table, source):
+			return 'Source existed, entities are not populated'
 		else:
-			new_url_id = connection.execute(urls_table.insert().values(url=url)).lastrowid
+			new_source_id = connection.execute(sources_table.insert().values(source_type=source_type, source=source, text=raw_text)).lastrowid
 			for text, ent in entities:
-				connection.execute(entities_table.insert().values(entity=ent, text=text, url_id=new_url_id))
+				connection.execute(entities_table.insert().values(entity=ent, text=text, source_id=new_source_id))
 		return 'New entities successfully populated'
 	except:
 		return 'Unknown error'
+
+def insertDataFrameRecord(connection: sqlalchemy.engine.base.Connection, tables: sqlalchemy.util._collections.immutabledict, batch_sources: pd.DataFrame) -> str:
+	'''
+	Insert a pandas dataframe of entities into the database
+
+			Parameters:
+					connection (sqlalchemy.engine.base.Connection): The active database connection
+					tables (sqlalchemy.util._collections.immutabledict): The tables in the database
+					batch_sources (pd.DataFrame): A dataframe of extracted entities from multiple sources with columns [source_type, source, text, entities]
+
+			Returns:
+					message (string): The status message of the action 
+	'''
+	responses = set()
+	for index, row in batch_sources.iterrows():
+		response = insertSingleRecord(connection, tables, row['source_type'], row['source'], row['text'], row['entities'])
+		responses.add(response)
+	if 'Unknown error' in responses:
+		return 'Unknown error'
+	elif 'Source existed, entities are not populated' in responses:
+		return 'At least some sources are existed in the database and not populated'
+	else:
+		return 'New entities are successfully populated for each entry'
+
 
 def retrieveAllEntities(connection: sqlalchemy.engine.base.Connection, tables: sqlalchemy.util._collections.immutabledict) -> Tuple[str, List[str]]:
 	'''
@@ -73,7 +101,7 @@ def retrieveAllEntities(connection: sqlalchemy.engine.base.Connection, tables: s
 					connection (sqlalchemy.engine.base.Connection): The active database connection
 					tables (sqlalchemy.util._collections.immutabledict): The tables in the database
 			Returns:
-					entities (list): unique entities in the database
+					content (Tuple[str, List[str]]): Status message and the unique entities in the database
 	'''
 	entities_table = tables['entities']
 	results = list(set([ent[0] for ent in connection.execute(select([entities_table.c.entity])).fetchall()]))
@@ -90,7 +118,7 @@ def searchEntity(connection: sqlalchemy.engine.base.Connection, tables: sqlalche
 					connection (sqlalchemy.engine.base.Connection): The active database connection
 					tables (sqlalchemy.util._collections.immutabledict): The tables in the database
 			Returns:
-					entities (list): unique entities in the database
+					content (Tuple[str, List[str]]): Status message and all corresponding text of the entity in the database
 	'''
 	entities_table = tables['entities']
 	try:
@@ -104,15 +132,16 @@ def searchEntity(connection: sqlalchemy.engine.base.Connection, tables: sqlalche
 
 def test():
 	db_path = 'sqlite:///./scraped_entities.db'
-	url = "www.google.com"
+	source = "www.google.com"
+	source_type = 'url'
 	engine = create_engine(db_path)
 	meta_data = MetaData(bind=engine)
 	MetaData.reflect(meta_data)
 	tables = meta_data.tables
-	entities = [('test_entity', 'test_text')]
+	entities = [('test_text', 'test_entity')]
 	with engine.connect() as connection:
-		print(checkIfURLExists(connection, tables['urls'], url))
-		insertSingleRecord(connection, tables, url, entities)
+		print(checkIfSourceExists(connection, tables['sources'], source))
+		print(insertSingleRecord(connection, tables, 'webpage', source, entities))
 
 def test2():
 	db_path = 'sqlite:///./scraped_entities.db'
