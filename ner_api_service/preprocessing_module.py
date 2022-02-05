@@ -1,6 +1,7 @@
 from bs4 import BeautifulSoup
 import requests
 import re
+from ner_module import spacyNER
 
 def scrapeSingleURL(url: str) -> str:
 	'''
@@ -28,7 +29,6 @@ def test():
 
 	url = "https://www.gic.com.sg/newsroom/all/gic-becomes-strategic-investor-in-intercontinental-energy-leading-green-fuels-company/"
 	raw_text = scrapeSingleURL(url)
-	from ner_module import spacyNER
 	NER_model = spacyNER()
 	results = NER_model.getListOfEntities(raw_text)
 	print(results)

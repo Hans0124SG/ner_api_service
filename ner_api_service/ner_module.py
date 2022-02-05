@@ -1,4 +1,5 @@
 from typing import List, Tuple
+import spacy
 
 class NERModule():
 	'''
@@ -26,7 +27,6 @@ class NERModule():
 class spacyNER(NERModule):
 
 	def __init__(self):
-		import spacy
 		super().__init__()
 		self.model = spacy.load("en_core_web_sm")
 

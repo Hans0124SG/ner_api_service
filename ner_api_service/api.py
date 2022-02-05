@@ -1,10 +1,12 @@
 import os
+import pandas as pd
 from flask import Flask, request, jsonify, redirect, url_for
 from flasgger import Swagger
 from sqlalchemy import create_engine, MetaData
 from ner_module import spacyNER
 import preprocessing_module 
 import db_module
+
 
 app = Flask(__name__)
 
@@ -103,7 +105,6 @@ def retrieve_from_csv():
 		200: 
 			description: text
 	"""
-	import pandas as pd
 	text_col = request.args.get('text_col')
 	source_col = request.args.get('source_col')
 	source_type_col = request.args.get('source_type_col')
