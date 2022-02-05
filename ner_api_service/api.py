@@ -18,7 +18,7 @@ template = {
 }
 
 swagger = Swagger(app, template=template)
-db_path = 'sqlite:///../database/scraped_entities.db'
+db_path = 'sqlite:////var/www/ner_api/database/scraped_entities.db'
 model = spacyNER()
 
 @app.route('/')

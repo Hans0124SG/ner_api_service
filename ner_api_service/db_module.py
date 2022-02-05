@@ -131,7 +131,7 @@ def searchEntity(connection: sqlalchemy.engine.base.Connection, tables: sqlalche
 		return (400, 'Bad Request', [])
 
 def test():
-	db_path = 'sqlite:///../database/scraped_entities.db'
+	db_path = 'sqlite:////var/www/ner_api/database/scraped_entities.db'
 	source = "www.google.com"
 	source_type = 'url'
 	engine = create_engine(db_path)
@@ -153,7 +153,7 @@ def test():
 
 
 def test2():
-	db_path = 'sqlite:///../database/scraped_entities.db'
+	db_path = 'sqlite:////var/www/ner_api/database/scraped_entities.db'
 	engine = create_engine(db_path)
 	meta_data = MetaData(bind=engine)
 	MetaData.reflect(meta_data)
@@ -163,7 +163,7 @@ def test2():
 		print(result)
 
 def test3():
-	db_path = 'sqlite:///../database/scraped_entities.db'
+	db_path = 'sqlite:////var/www/ner_api/database/scraped_entities.db'
 	engine = create_engine(db_path)
 	meta_data = MetaData(bind=engine)
 	MetaData.reflect(meta_data)
