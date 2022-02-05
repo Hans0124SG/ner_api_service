@@ -1,5 +1,6 @@
 FROM python:3.8.12-bullseye
-EXPOSE 5000
+ENV PORT 5000
+ENV HOST 0.0.0.0
 COPY ./ner_api_service /usr/local/python/
 COPY ./requirements.txt /usr/local/python/
 WORKDIR /usr/local/python/
