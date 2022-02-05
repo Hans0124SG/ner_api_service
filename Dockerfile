@@ -6,6 +6,6 @@ WORKDIR /usr/local/python/
 RUN pip install -r requirements.txt
 WORKDIR /usr/local/python/database/
 RUN python db_init.py
-WORKDIR /usr/local/python/
+WORKDIR /usr/local/python/ner_api_service
 RUN python -m spacy download en_core_web_sm
 CMD python api.py
