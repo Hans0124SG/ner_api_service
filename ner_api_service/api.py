@@ -8,7 +8,7 @@ import db_module
 
 app = Flask(__name__)
 swagger = Swagger(app)
-db_path = 'sqlite:///./scraped_entities.db'
+db_path = 'sqlite:///../database/scraped_entities.db'
 model = spacyNER()
 
 @app.route('/')

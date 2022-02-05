@@ -3,6 +3,7 @@ ENV PORT 5000
 ENV HOST 0.0.0.0
 COPY ./ner_api_service /usr/local/python/
 COPY ./requirements.txt /usr/local/python/
+COPY ./test_files /usr/local/python/
 WORKDIR /usr/local/python/
 RUN pip install -r requirements.txt
 RUN python db_init.py

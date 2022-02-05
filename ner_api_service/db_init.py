@@ -1,7 +1,8 @@
 from sqlalchemy import create_engine, MetaData, ForeignKey
 from sqlalchemy import Table, Column, Date, Integer, String, Text
+import os
 
-engine = create_engine('sqlite:///./scraped_entities.db', echo=True)
+engine = create_engine('sqlite:///../database/scraped_entities.db', echo=True)
 
 metadata_obj = MetaData()
 
