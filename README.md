@@ -35,4 +35,5 @@ Additional comments:
 3. I use SQLAlchemy in the DB Module, so that it will be easier to change the database backend from sqlite to other backends such as PostgreSQL.
 4. For NER Module, I wrote an NERModule as the base class, and future versions of NER models can be packaged into a class inheriting the base class, just need to override the two methods. 
 5. For Scraping Module, I just use a simple function, it can be further improved based on the target websites, as the structure of the HTML varies from website to website.
-6. I learned Docker and API deployment within about one week. I believe there are still many aspects of model deployment that I need to learn, but I hope that I have proved myself a quick-learner and will become a better MLE as time goes by.
+6. For extracting entities from a database, I don't have a database running on the Internet to test, so I used a local database to test. So it may not work optimally.
+7. I learned Docker and API deployment within about one week. I believe there are still many aspects of model deployment that I need to learn, but I hope that I have proved myself a quick-learner and will become a better MLE as time goes by.
