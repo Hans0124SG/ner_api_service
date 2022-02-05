@@ -9,7 +9,7 @@ Try it out!
 [![Run on Google Cloud](https://deploy.cloud.run/button.svg)](https://deploy.cloud.run)
 
 
-Features that I prioritize:
+Features that I prioritize in this prototyping phase:
 -
 1. Basic Functionalities
 - Given a paragraph of text, return the entities recognized
@@ -23,10 +23,12 @@ Features that I prioritize:
 4. Testing each individual module
 5. Use Git to do version control
 
-Features that I de-prioritize:
+Features that I de-prioritize but can be important in the next phases:
 -
 - Retrieve data from an object store service. Reason: 1) I assume most of the data will be passed to our API from a csv file or a database, rather than an object store service like AWS S3. 2) In prototyping phase, the input should come from csv/database much more often. 3) I do not have easy access to an object store service to test.
-- A job scheduling system to handle slow API. Reason: 1) NER is generally fast, so I assume we won't expect a slow API. If there is a business need of huge amount of data being processed for each API call, we should re-evaluate the priority. 2) I am less familiar with how to build a job scheduling system.  
+- A job scheduling system to handle slow API. Reason: 1) NER is generally fast, so I assume we won't expect a slow API. If there is a business need of huge amount of data being processed for each API call, we should re-evaluate the priority.
+- Security concerns. Reason: 1) Assuming this API is only open to internal customer, security is less concern compared to an publicly open API.
+- Usage monitoring. Reason: 1) In prototyping phase, usage should be relatively lower, and we would only open the API to specific users for testing purpose. Current usage data won't reflect the true pattern of API usage once it is formally released.
 
 Additional comments:
 -
